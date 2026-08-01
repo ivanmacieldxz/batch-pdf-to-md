@@ -125,7 +125,7 @@ class App(ctk.CTk):
         if platform.system() == "Linux":
             try:
                 # Use native GTK dialog on Linux via zenity for a modern look
-                result = subprocess.run(["zenity", "--file-selection", f"--title={title}", "--file-filter=PDF files (pdf) | *.pdf"], capture_output=True, text=True)
+                result = subprocess.run(["zenity", "--file-selection", f"--title={title}", "--file-filter=*.pdf"], capture_output=True, text=True)
                 if result.returncode == 0:
                     return result.stdout.strip()
                 elif result.returncode == 1:
