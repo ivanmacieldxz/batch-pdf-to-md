@@ -18,6 +18,11 @@ def main():
         help="Path to the output directory. Defaults to ~/batch-pdf-to-md",
         default=None
     )
+    parser.add_argument(
+        '--ignore-margins',
+        action='store_true',
+        help="Ignore headers and footers (top and bottom 72 points) during conversion."
+    )
     
     args = parser.parse_args()
     
@@ -40,7 +45,8 @@ def main():
         print(f"Output directory: Default (~/batch-pdf-to-md)")
         
     try:
-        process_batch(input_path, args.output)
+        margins = (0, 72, 0, 72) if args.ignore_margins else (0, 0, 0, 0)
+        process_batch(input_path, args.output, margins=margins)
         print("Conversion completed successfully.")
     except Exception as e:
         print(f"An error occurred during conversion: {e}")

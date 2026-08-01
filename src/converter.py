@@ -24,7 +24,7 @@ def normalize_markdown(text: str) -> str:
     
     return text
 
-def process_file(input_pdf_path: str, output_md_path: str):
+def process_file(input_pdf_path: str, output_md_path: str, margins=(0, 0, 0, 0)):
     """
     Converts a single PDF to Markdown and applies normalizations and RAG rules.
     """
@@ -33,7 +33,7 @@ def process_file(input_pdf_path: str, output_md_path: str):
     temp_dir = tempfile.mkdtemp()
     try:
         # Extract markdown, generating image links
-        md_text = pymupdf4llm.to_markdown(input_pdf_path, write_images=True, image_path=temp_dir)
+        md_text = pymupdf4llm.to_markdown(input_pdf_path, write_images=True, image_path=temp_dir, margins=margins)
         
         # Replace image markdown tags with the [Imagen Omitida] placeholder for RAG
         # This matches standard markdown images: ![alt](url)
@@ -53,7 +53,7 @@ def process_file(input_pdf_path: str, output_md_path: str):
         # Clean up the temporary images
         shutil.rmtree(temp_dir)
 
-def process_batch(input_path: str, output_dir: str = None):
+def process_batch(input_path: str, output_dir: str = None, margins=(0, 0, 0, 0)):
     """
     Processes either a single PDF file or a directory of PDFs.
     """
@@ -68,7 +68,7 @@ def process_batch(input_path: str, output_dir: str = None):
         basename = os.path.basename(input_path)
         md_filename = os.path.splitext(basename)[0] + '.md'
         output_md_path = os.path.join(output_dir, md_filename)
-        process_file(input_path, output_md_path)
+        process_file(input_path, output_md_path, margins)
         return
         
     # Handle directory
@@ -88,4 +88,4 @@ def process_batch(input_path: str, output_dir: str = None):
                     md_filename = os.path.splitext(file)[0] + '.md'
                     output_md_path = os.path.join(out_subdir, md_filename)
                     
-                    process_file(pdf_path, output_md_path)
+                    process_file(pdf_path, output_md_path, margins)

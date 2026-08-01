@@ -90,6 +90,10 @@ class App(ctk.CTk):
         self.output_label = ctk.CTkLabel(self.output_frame, text="Default: ~/batch-pdf-to-md", text_color="gray", font=self.path_font, wraplength=280, justify="left")
         self.output_label.pack(side="left")
         
+        # Margin Option
+        self.checkbox_margins = ctk.CTkCheckBox(self.card_frame, text="Ignore Headers & Footers", font=self.label_font, fg_color=PURPLE_PRIMARY, hover_color=PURPLE_HOVER)
+        self.checkbox_margins.pack(pady=(0, 20), padx=30, anchor="w")
+        
         # Progress Section
         self.progress_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.progress_frame.pack(pady=(10, 30), padx=40, fill="x")
@@ -156,9 +160,10 @@ class App(ctk.CTk):
             
     def conversion_thread(self):
         out_dir = self.output_dir if self.output_dir else None
+        margins = (0, 72, 0, 72) if self.checkbox_margins.get() else (0, 0, 0, 0)
         
         try:
-            process_batch(self.input_path, out_dir)
+            process_batch(self.input_path, out_dir, margins=margins)
             
             def finalize_ui():
                 self.progressbar.stop()
