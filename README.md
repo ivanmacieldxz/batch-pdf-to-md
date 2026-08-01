@@ -38,3 +38,25 @@ A tool to convert PDF files (single or batch) to Markdown format, preserving sem
    pip install -r requirements.txt
    ```
 
+## Usage
+
+### Graphical User Interface (GUI)
+To launch the modern graphical interface, simply run the main script with no arguments:
+```bash
+python main.py
+```
+This will open a window where you can easily select your input files/folders and output destination.
+
+### Command Line Interface (CLI)
+You can also run the tool directly from the terminal for scripting or quick conversions:
+```bash
+python main.py <input_path> [-o <output_directory>]
+```
+- `<input_path>`: The path to a single PDF file or a folder containing PDFs.
+- `-o, --output`: (Optional) The folder where markdown files will be saved. Defaults to `~/batch-pdf-to-md`.
+
+**Example:**
+```bash
+python main.py ./my_pdfs -o ./converted_markdowns
+```
+
