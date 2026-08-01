@@ -6,6 +6,7 @@ A tool to convert PDF files (single or batch) to Markdown format, preserving sem
 - Convert single PDFs or entire directories.
 - Maintains semantic contents (tables, titles).
 - Output text normalisation (spaces, blank lines).
+- **RAG-ready formatting**: Converts PDFs keeping semantic structure (tables) and replaces images with `[Imagen Omitida]` placeholders to avoid context pollution in text-based RAG pipelines.
 - Modern clean Graphical User Interface (GUI).
 - Command Line Interface (CLI).
 
