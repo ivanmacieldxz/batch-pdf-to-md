@@ -104,7 +104,6 @@ class App(ctk.CTk):
         self.progressbar = ctk.CTkProgressBar(self.progress_frame, height=15, corner_radius=10, progress_color=PURPLE_PRIMARY)
         self.progressbar.pack(fill="x")
         self.progressbar.set(0)
-        self.progressbar.pack_forget()
         
         # Convert Button
         self.convert_btn = ctk.CTkButton(self, text="Start Conversion", font=ctk.CTkFont(family="Roboto", size=22, weight="bold"), height=60, width=300, fg_color=PURPLE_PRIMARY, hover_color=PURPLE_HOVER, command=self.start_conversion)
@@ -158,31 +157,37 @@ class App(ctk.CTk):
             self.output_dir = directory
             self.output_label.configure(text=self.output_dir, text_color=("black", "white"))
             
+    def update_progress(self, current, total, filename):
+        def update_ui():
+            progress = current / total if total > 0 else 0
+            self.progressbar.set(progress)
+            self.progress_label.configure(text=f"Converting: {filename} ({current}/{total})")
+            
+        self.after(0, update_ui)
+            
     def conversion_thread(self):
         out_dir = self.output_dir if self.output_dir else None
         margins = (0, 72, 0, 72) if self.checkbox_margins.get() else (0, 0, 0, 0)
         
         try:
-            process_batch(self.input_path, out_dir, margins=margins)
+            successful = process_batch(self.input_path, out_dir, margins=margins, progress_callback=self.update_progress)
             
             def finalize_ui():
-                self.progressbar.stop()
-                self.progressbar.pack_forget()
-                self.progress_label.configure(text="Done! Successfully converted files.")
+                self.progressbar.set(1.0)
+                self.progress_label.configure(text=f"Done! Successfully converted {successful} file(s).")
                 self.convert_btn.configure(state="normal", fg_color=PURPLE_PRIMARY)
                 self.input_btn_file.configure(state="normal")
                 self.input_btn_folder.configure(state="normal")
                 self.output_btn.configure(state="normal")
                 
                 # Show success modern dialog
-                ModernMessageBox(self, "Conversion Complete", "Successfully converted the PDF file(s).", btn_color="#28a745")
+                ModernMessageBox(self, "Conversion Complete", f"Successfully converted {successful} file(s).", btn_color="#28a745")
                 
             self.after(0, finalize_ui)
             
         except Exception as e:
             def error_ui():
-                self.progressbar.stop()
-                self.progressbar.pack_forget()
+                self.progressbar.set(0)
                 self.progress_label.configure(text="Error occurred during conversion.")
                 self.convert_btn.configure(state="normal", fg_color=PURPLE_PRIMARY)
                 self.input_btn_file.configure(state="normal")
@@ -205,8 +210,7 @@ class App(ctk.CTk):
         self.input_btn_folder.configure(state="disabled")
         self.output_btn.configure(state="disabled")
         
-        self.progressbar.pack(fill="x")
-        self.progressbar.start()
+        self.progressbar.set(0)
         self.progress_label.configure(text="Starting conversion...")
         
         threading.Thread(target=self.conversion_thread, daemon=True).start()
