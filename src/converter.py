@@ -49,11 +49,15 @@ def process_file(input_pdf_path: str, output_md_path: str, margins=(0, 0, 0, 0))
         with open(output_md_path, 'w', encoding='utf-8') as f:
             f.write(md_text)
             
+        # Preserve original file's access and modification time
+        stat_info = os.stat(input_pdf_path)
+        os.utime(output_md_path, (stat_info.st_atime, stat_info.st_mtime))
+            
     finally:
         # Clean up the temporary images
         shutil.rmtree(temp_dir)
 
-def process_batch(input_path: str, output_dir: str = None, margins=(0, 0, 0, 0)):
+def process_batch(input_path: str, output_dir: str = None, margins=(0, 0, 0, 0), progress_callback=None):
     """
     Processes either a single PDF file or a directory of PDFs.
     """
@@ -68,24 +72,39 @@ def process_batch(input_path: str, output_dir: str = None, margins=(0, 0, 0, 0))
         basename = os.path.basename(input_path)
         md_filename = os.path.splitext(basename)[0] + '.md'
         output_md_path = os.path.join(output_dir, md_filename)
+        
+        if progress_callback:
+            progress_callback(1, 1, basename)
+            
         process_file(input_path, output_md_path, margins)
-        return
+        return 1
         
     # Handle directory
     if os.path.isdir(input_path):
+        pdf_files = []
         for root, _, files in os.walk(input_path):
             for file in files:
                 if file.lower().endswith('.pdf'):
-                    pdf_path = os.path.join(root, file)
+                    pdf_files.append((root, file))
                     
-                    # Preserve relative path structure in output folder
-                    rel_path = os.path.relpath(root, input_path)
-                    if rel_path == '.':
-                        out_subdir = output_dir
-                    else:
-                        out_subdir = os.path.join(output_dir, rel_path)
-                        
-                    md_filename = os.path.splitext(file)[0] + '.md'
-                    output_md_path = os.path.join(out_subdir, md_filename)
-                    
-                    process_file(pdf_path, output_md_path, margins)
+        total = len(pdf_files)
+        for i, (root, file) in enumerate(pdf_files, 1):
+            if progress_callback:
+                progress_callback(i, total, file)
+                
+            pdf_path = os.path.join(root, file)
+            
+            # Preserve relative path structure in output folder
+            rel_path = os.path.relpath(root, input_path)
+            if rel_path == '.':
+                out_subdir = output_dir
+            else:
+                out_subdir = os.path.join(output_dir, rel_path)
+                os.makedirs(out_subdir, exist_ok=True)
+                
+            md_filename = os.path.splitext(file)[0] + '.md'
+            output_md_path = os.path.join(out_subdir, md_filename)
+            
+            process_file(pdf_path, output_md_path, margins)
+            
+        return total
