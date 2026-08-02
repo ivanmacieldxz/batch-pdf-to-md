@@ -49,6 +49,10 @@ def process_file(input_pdf_path: str, output_md_path: str, margins=(0, 0, 0, 0))
         with open(output_md_path, 'w', encoding='utf-8') as f:
             f.write(md_text)
             
+        # Preserve original file's access and modification time
+        stat_info = os.stat(input_pdf_path)
+        os.utime(output_md_path, (stat_info.st_atime, stat_info.st_mtime))
+            
     finally:
         # Clean up the temporary images
         shutil.rmtree(temp_dir)
