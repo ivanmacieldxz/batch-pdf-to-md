@@ -1,0 +1,5 @@
+src/__pycache__/
+batch-pdf-to-md.spec
+build/
+dist/
+venv/
